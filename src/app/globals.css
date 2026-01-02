@@ -1,29 +1,241 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e0fbfc;
-  --foreground: #253237;
-  --light-cyan: #e0fbfc;
-  --light-blue: #c2dfe3;
-  --cool-steel: #9db4c0;
-  --blue-slate: #5c6b73;
-  --jet-black: #253237;
+  --background: #eef4ed;
+  --foreground: #0b2545;
+  --cream: #eef4ed;
+  --sky-blue: #8da9c4;
+  --navy: #0b2545;
+  --dark-blue: #13315c;
+  --steel-blue: #134074;
 }
 
 .dark {
-  --background: #253237;
-  --foreground: #e0fbfc;
+  --background: #0b2545;
+  --foreground: #eef4ed;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-comfortaa: var(--font-comfortaa);
   --font-ubuntu: var(--font-ubuntu);
+  
+  /* Color definitions for Tailwind v4 - using underscores to match class names */
+  --color-cream: #eef4ed;
+  --color-cream-50: #f8faf8;
+  --color-cream-100: #eef4ed;
+  --color-cream-200: #dde9db;
+  --color-cream-300: #c4d4c1;
+  --color-cream-400: #a3b89f;
+  --color-cream-500: #7d9578;
+  --color-cream-600: #5f755a;
+  --color-cream-700: #4a5c47;
+  --color-cream-800: #3d4c3b;
+  --color-cream-900: #344032;
+  
+  --color-sky_blue: #8da9c4;
+  --color-sky_blue-50: #f0f4f8;
+  --color-sky_blue-100: #d9e4ed;
+  --color-sky_blue-200: #b8cde0;
+  --color-sky_blue-300: #8da9c4;
+  --color-sky_blue-400: #6b8aab;
+  --color-sky_blue-500: #527095;
+  --color-sky_blue-600: #425a7a;
+  --color-sky_blue-700: #394b65;
+  --color-sky_blue-800: #344155;
+  --color-sky_blue-900: #2f3847;
+  
+  --color-navy: #0b2545;
+  --color-navy-50: #f0f4f8;
+  --color-navy-100: #d9e4ed;
+  --color-navy-200: #b8cde0;
+  --color-navy-300: #8da9c4;
+  --color-navy-400: #6b8aab;
+  --color-navy-500: #0b2545;
+  --color-navy-600: #0a1f3a;
+  --color-navy-700: #08192f;
+  --color-navy-800: #061324;
+  --color-navy-900: #040e1a;
+  
+  --color-dark_blue: #13315c;
+  --color-dark_blue-50: #e8edf5;
+  --color-dark_blue-100: #c5d4e8;
+  --color-dark_blue-200: #9bb4d6;
+  --color-dark_blue-300: #6b8fc0;
+  --color-dark_blue-400: #456fa8;
+  --color-dark_blue-500: #13315c;
+  --color-dark_blue-600: #0f2849;
+  --color-dark_blue-700: #0c2039;
+  --color-dark_blue-800: #09182b;
+  --color-dark_blue-900: #061120;
+  
+  --color-steel_blue: #134074;
+  --color-steel_blue-50: #e8ecf3;
+  --color-steel_blue-100: #c5d0e2;
+  --color-steel_blue-200: #9bacc9;
+  --color-steel_blue-300: #6b84ab;
+  --color-steel_blue-400: #456392;
+  --color-steel_blue-500: #134074;
+  --color-steel_blue-600: #0f345f;
+  --color-steel_blue-700: #0c294c;
+  --color-steel_blue-800: #091e3a;
+  --color-steel_blue-900: #061529;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-comfortaa), sans-serif;
+}
+
+
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
+
+.delay-2000 {
+  animation-delay: 2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-600 {
+  animation-delay: 0.6s;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cream);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sky-blue);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--steel-blue);
+}
+
+/* Custom scrollbar for dropdowns */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--sky-blue);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--steel-blue);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--steel-blue);
+  outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+  background: var(--steel-blue);
+  color: white;
 }

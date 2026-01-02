@@ -7,7 +7,17 @@ import { sortUsersByRanking } from '@/lib/ranking';
 
 export async function GET(request) {
   try {
-    await connectDB();
+    try {
+      await connectDB();
+    } catch (dbError) {
+      if (dbError.message.includes('MONGODB_URI')) {
+        return NextResponse.json(
+          { error: 'Database not configured. Please set MONGODB_URI in .env.local' },
+          { status: 503 }
+        );
+      }
+      throw dbError;
+    }
     
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
