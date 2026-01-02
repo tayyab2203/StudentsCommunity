@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import Message from '@/models/Message';
 import ChatRoom from '@/models/ChatRoom';
 
 export async function GET(request, { params }) {
   try {
-    const session = await getServerSession();
+    // Await params if it's a Promise (Next.js 15+)
+    const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+    const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
       return NextResponse.json(
@@ -17,7 +20,7 @@ export async function GET(request, { params }) {
     
     await connectDB();
     
-    const chatRoom = await ChatRoom.findById(params.id);
+    const chatRoom = await ChatRoom.findById(resolvedParams.id);
     
     if (!chatRoom) {
       return NextResponse.json(
@@ -35,7 +38,7 @@ export async function GET(request, { params }) {
       );
     }
     
-    const messages = await Message.find({ chatRoomId: params.id })
+    const messages = await Message.find({ chatRoomId: resolvedParams.id })
       .populate('senderId', 'name image email')
       .sort({ createdAt: 1 })
       .lean();
@@ -52,7 +55,9 @@ export async function GET(request, { params }) {
 
 export async function POST(request, { params }) {
   try {
-    const session = await getServerSession();
+    // Await params if it's a Promise (Next.js 15+)
+    const resolvedParams = params && typeof params.then === 'function' ? await params : params;
+    const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
       return NextResponse.json(
@@ -63,7 +68,7 @@ export async function POST(request, { params }) {
     
     await connectDB();
     
-    const chatRoom = await ChatRoom.findById(params.id);
+    const chatRoom = await ChatRoom.findById(resolvedParams.id);
     
     if (!chatRoom) {
       return NextResponse.json(
@@ -92,7 +97,7 @@ export async function POST(request, { params }) {
     }
     
     const message = await Message.create({
-      chatRoomId: params.id,
+      chatRoomId: resolvedParams.id,
       senderId: userId,
       body: messageBody.trim(),
     });

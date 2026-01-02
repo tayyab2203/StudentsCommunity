@@ -1,52 +1,30 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Points, PointMaterial } from '@react-three/drei';
-import * as THREE from 'three';
+import dynamic from 'next/dynamic';
 
-function FloatingParticles({ count = 100 }) {
-  const mesh = useRef();
-  const lightMode = true; // You can make this dynamic based on theme
-
-  const particles = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < count * 3; i++) {
-      positions[i] = (Math.random() - 0.5) * 20;
-    }
-    return positions;
-  }, [count]);
-
-  useFrame((state) => {
-    if (mesh.current) {
-      mesh.current.rotation.x = state.clock.elapsedTime * 0.05;
-      mesh.current.rotation.y = state.clock.elapsedTime * 0.075;
-    }
-  });
-
-  const color = lightMode ? '#c2dfe3' : '#9db4c0';
-
-  return (
-    <Points ref={mesh} positions={particles} stride={3} frustumCulled={false}>
-      <PointMaterial
-        transparent
-        color={color}
-        size={0.05}
-        sizeAttenuation={true}
-        depthWrite={false}
-        opacity={0.6}
-      />
-    </Points>
-  );
-}
+// Dynamically import Three.js component to avoid SSR issues
+const ThreeJSBackground = dynamic(() => import('./ThreeJSBackground'), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      {/* Fallback gradient orbs while loading */}
+      <div className="absolute top-0 -left-1/4 w-96 h-96 bg-sky_blue-400/30 dark:bg-sky_blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute top-1/3 -right-1/4 w-96 h-96 bg-steel_blue-400/30 dark:bg-steel_blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-cream-400/30 dark:bg-cream-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    </div>
+  ),
+});
 
 export default function BackgroundAnimation() {
   return (
-    <div className="fixed inset-0 -z-10 opacity-30">
-      <Canvas camera={{ position: [0, 0, 5] }}>
-        <FloatingParticles count={150} />
-      </Canvas>
-    </div>
+    <>
+      <ThreeJSBackground />
+      {/* Additional gradient overlay for depth */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-1/4 w-96 h-96 bg-sky_blue-400/10 dark:bg-sky_blue-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/3 -right-1/4 w-96 h-96 bg-steel_blue-400/10 dark:bg-steel_blue-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-cream-400/10 dark:bg-cream-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+    </>
   );
 }
-

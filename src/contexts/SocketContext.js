@@ -14,7 +14,8 @@ export function SocketProvider({ children }) {
     if (!session) return;
 
     // Connect to socket server
-    const socketInstance = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin;
+    const socketInstance = io(socketUrl, {
       transports: ['websocket'],
     });
 

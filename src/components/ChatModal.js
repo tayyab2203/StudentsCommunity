@@ -18,34 +18,54 @@ export default function ChatModal({ roomId, onClose }) {
   useEffect(() => {
     if (!roomId) return;
 
-    // Load messages
-    const loadMessages = async () => {
+    // Load room and messages
+    const loadData = async () => {
       try {
-        const response = await fetch(`/api/chat/rooms/${roomId}/messages`);
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(data.messages || []);
+        // Load room info
+        const roomsResponse = await fetch('/api/chat/rooms');
+        if (roomsResponse.ok) {
+          const roomsData = await roomsResponse.json();
+          const foundRoom = roomsData.rooms?.find((r) => r._id === roomId);
+          if (foundRoom) {
+            setRoom(foundRoom);
+          }
+        }
+
+        // Load messages
+        const messagesResponse = await fetch(`/api/chat/rooms/${roomId}/messages`);
+        if (messagesResponse.ok) {
+          const messagesData = await messagesResponse.json();
+          setMessages(messagesData.messages || []);
         }
       } catch (error) {
-        console.error('Error loading messages:', error);
+        console.error('Error loading data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadMessages();
+    loadData();
 
     // Listen for new messages
     if (socket) {
+      socket.emit('joinRoom', roomId);
+      
       socket.on('newMessage', (message) => {
-        if (message.chatRoomId === roomId) {
-          setMessages((prev) => [...prev, message]);
+        if (message.chatRoomId === roomId || message.chatRoomId?.toString() === roomId) {
+          setMessages((prev) => {
+            // Avoid duplicates
+            if (prev.some((m) => m._id === message._id)) {
+              return prev;
+            }
+            return [...prev, message];
+          });
         }
       });
     }
 
     return () => {
       if (socket) {
+        socket.emit('leaveRoom', roomId);
         socket.off('newMessage');
       }
     };
@@ -79,7 +99,10 @@ export default function ChatModal({ roomId, onClose }) {
 
       const data = await response.json();
       
-      // Emit via socket
+      // Add message to local state immediately
+      setMessages((prev) => [...prev, data.message]);
+      
+      // Emit via socket for real-time updates
       if (socket) {
         socket.emit('sendMessage', {
           chatRoomId: roomId,
@@ -97,8 +120,15 @@ export default function ChatModal({ roomId, onClose }) {
   };
 
   const getMessageSender = (message) => {
-    if (room?.isAnonymous && message.senderId._id !== session?.user?.id) {
-      return { name: 'Anonymous', image: null };
+    // Check if this is an anonymous room and the message is from the other participant
+    if (room?.isAnonymous) {
+      const messageSenderId = message.senderId?._id || message.senderId;
+      const currentUserId = session?.user?.id;
+      
+      // If the message is not from the current user, show as anonymous
+      if (messageSenderId !== currentUserId) {
+        return { name: 'Anonymous', image: null };
+      }
     }
     return message.senderId || { name: 'Unknown', image: null };
   };
@@ -106,8 +136,8 @@ export default function ChatModal({ roomId, onClose }) {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-jet_black-400 rounded-lg p-6">
-          <div className="w-8 h-8 border-2 border-cool_steel-500 border-t-transparent rounded-full animate-spin" />
+        <div className="bg-white dark:bg-navy-400 rounded-lg p-6">
+          <div className="w-8 h-8 border-2 border-steel_blue-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -115,16 +145,16 @@ export default function ChatModal({ roomId, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-jet_black-400 rounded-lg w-full max-w-2xl h-[600px] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-cool_steel-300 dark:border-cool_steel-700">
-          <h3 className="text-lg font-semibold text-jet_black-500 dark:text-light_cyan-500">
+      <div className="bg-white dark:bg-navy-400 rounded-lg w-full max-w-2xl h-[600px] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-steel_blue-300 dark:border-steel_blue-700">
+          <h3 className="text-lg font-semibold text-navy-500 dark:text-cream-500">
             Chat
           </h3>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-light_blue-400 dark:hover:bg-blue_slate-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-sky_blue-400 dark:hover:bg-dark_blue-700 rounded-lg transition-colors"
           >
-            <FiX className="w-5 h-5 text-blue_slate-600 dark:text-blue_slate-300" />
+            <FiX className="w-5 h-5 text-dark_blue-600 dark:text-dark_blue-300" />
           </button>
         </div>
 
@@ -141,8 +171,8 @@ export default function ChatModal({ roomId, onClose }) {
                 <div
                   className={`max-w-[70%] rounded-lg p-3 ${
                     isOwn
-                      ? 'bg-cool_steel-500 dark:bg-cool_steel-400 text-white'
-                      : 'bg-light_blue-400 dark:bg-blue_slate-700 text-jet_black-500 dark:text-light_cyan-500'
+                      ? 'bg-steel_blue-500 dark:bg-steel_blue-400 text-white'
+                      : 'bg-sky_blue-400 dark:bg-dark_blue-700 text-navy-500 dark:text-cream-500'
                   }`}
                 >
                   {!isOwn && (
@@ -162,19 +192,19 @@ export default function ChatModal({ roomId, onClose }) {
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSend} className="p-4 border-t border-cool_steel-300 dark:border-cool_steel-700">
+        <form onSubmit={handleSend} className="p-4 border-t border-steel_blue-300 dark:border-steel_blue-700">
           <div className="flex gap-2">
             <input
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1 px-4 py-2 border border-cool_steel-300 dark:border-cool_steel-700 rounded-lg bg-white dark:bg-jet_black-400 text-jet_black-500 dark:text-light_cyan-500 focus:outline-none focus:ring-2 focus:ring-cool_steel-400 dark:focus:ring-cool_steel-500"
+              className="flex-1 px-4 py-2 border border-steel_blue-300 dark:border-steel_blue-700 rounded-lg bg-white dark:bg-navy-400 text-navy-500 dark:text-cream-500 focus:outline-none focus:ring-2 focus:ring-steel_blue-400 dark:focus:ring-steel_blue-500"
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || sending}
-              className="px-4 py-2 bg-cool_steel-500 dark:bg-cool_steel-400 text-white rounded-lg hover:bg-cool_steel-600 dark:hover:bg-cool_steel-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-steel_blue-500 dark:bg-steel_blue-400 text-white rounded-lg hover:bg-steel_blue-600 dark:hover:bg-steel_blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FiSend className="w-5 h-5" />
             </button>

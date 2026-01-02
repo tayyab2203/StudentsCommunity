@@ -1,4 +1,7 @@
 import { Comfortaa, Ubuntu } from "next/font/google";
+import Providers from "@/components/Providers";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const comfortaa = Comfortaa({
@@ -23,9 +26,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${comfortaa.variable} ${ubuntu.variable} font-comfortaa antialiased`}
+        className={`${comfortaa.variable} ${ubuntu.variable} font-comfortaa antialiased bg-cream dark:bg-navy text-navy dark:text-cream`}
+        suppressHydrationWarning
       >
-        {children}
+        <Providers>
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
